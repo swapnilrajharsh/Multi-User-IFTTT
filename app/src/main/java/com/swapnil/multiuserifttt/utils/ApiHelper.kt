@@ -18,7 +18,7 @@ object ApiHelper {
     private lateinit var userAuthenticationListener: UserAuthenticationListener
 
     init {
-        val BASE_URL = "http://a963-2405-201-a416-d981-202e-5fd4-dffa-b802.ngrok.io"
+        val BASE_URL = "http://830d-2405-201-a416-d981-29d2-d3f4-b7ef-c46a.ngrok.io"
         val client = OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor()
             .setLevel(HttpLoggingInterceptor.Level.BODY))
             .build()
@@ -60,13 +60,42 @@ object ApiHelper {
         })
     }
 
+    fun updateDataChoiceNumber(oauthcode: String, data: String) {
+        val response = userDataTokenApi.updateUserChoiceNumber(UpdateData(oauthcode, data))
+
+        response.enqueue(object : Callback<UpdateResponse>{
+            override fun onResponse(
+                call: Call<UpdateResponse>,
+                response: Response<UpdateResponse>
+            ) {
+                if (!response.isSuccessful()) {
+                    Log.d("IFTTTACT", "Not successful response")
+                } else {
+                    Log.d("IFTTTACT", "Response Successful and data received is " +
+                            "${response.body()!!.status}")
+                }
+            }
+
+            override fun onFailure(call: Call<UpdateResponse>, t: Throwable) {
+                Log.d("IFTTTACT", "Update Failed")
+            }
+
+        })
+    }
+
     private interface UserDataTokenApi {
         @POST("/verifydeviceuser")
         fun getUserDataPostAuthentication(@Body loginCred: LoginCred) : Call<UserData>
+
+        @POST("/changemydata")
+        fun updateUserChoiceNumber(@Body updateData: UpdateData) : Call<UpdateResponse>
     }
 
     //For Data to be send in Body
     private class LoginCred(val username: String, val password: String)
     //For Data received in response to authentication
     class UserData(val status: String, val username: String?, val oauthcode: String?)
+    // For receiving update data response
+    private class UpdateResponse(val status: String)
+    class UpdateData(val oauthcode: String, val data: String)
 }

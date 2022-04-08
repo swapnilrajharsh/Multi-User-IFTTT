@@ -30,6 +30,7 @@ class LandingFragment : Fragment() {
         ApiHelper.registerUserAuthenticationListener(object : UserAuthenticationListener{
             override fun authenticationDone(userData: ApiHelper.UserData) {
                 Log.d("IFTTT", "User Data : ${userData.oauthcode}")
+                storeUserData(userData.username!!, userData.oauthcode!!)
                 navigateToConnectionFragment()
             }
         })
