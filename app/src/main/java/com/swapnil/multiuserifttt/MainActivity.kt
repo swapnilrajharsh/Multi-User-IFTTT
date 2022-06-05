@@ -1,10 +1,12 @@
 package com.swapnil.multiuserifttt
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import com.ifttt.connect.ui.ConnectResult
 import com.swapnil.multiuserifttt.utils.PreferenceHelper
 
 class MainActivity : AppCompatActivity() {
@@ -42,4 +44,12 @@ class MainActivity : AppCompatActivity() {
     private companion object {
         private const val TAG = "IFTTTACT"
     }
+
+    override fun onNewIntent(intent: Intent?) {
+        Log.d("IFTTTACT", "IntentA ${intent}")
+        super.onNewIntent(intent)
+        /*setIntent(intent)*/
+    }
+
+
 }

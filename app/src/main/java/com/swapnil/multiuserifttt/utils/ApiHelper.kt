@@ -11,6 +11,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 object ApiHelper {
@@ -18,7 +19,7 @@ object ApiHelper {
     private lateinit var userAuthenticationListener: UserAuthenticationListener
 
     init {
-        val BASE_URL = "http://830d-2405-201-a416-d981-29d2-d3f4-b7ef-c46a.ngrok.io"
+        val BASE_URL = "https://038f-2405-201-a416-d981-7d45-fb8c-69c9-2d5d.ngrok.io"
         val client = OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor()
             .setLevel(HttpLoggingInterceptor.Level.BODY))
             .build()
@@ -45,6 +46,7 @@ object ApiHelper {
                 } else {
                     if (response.body()!!.status.equals("error")){
                         Log.d("IFTTTACT", "Invalid Username and Password")
+                        userAuthenticationListener.authenticationUnsuccessful("Invalid Username/Password")
                     } else {
                         val body = response.body()
                         Log.d("IFTTTACT", " ${body!!.status}, ${body.username}, ${body.oauthcode}")
@@ -83,12 +85,37 @@ object ApiHelper {
         })
     }
 
+    fun updateUserSpecificDeviceId(authcode: String, deviceid: String) {
+        val response = userDataTokenApi.updateDeviceId(authcode, DeviceId(deviceid))
+
+        response.enqueue(object : Callback<UpdateResponse>{
+            override fun onResponse(
+                call: Call<UpdateResponse>,
+                response: Response<UpdateResponse>
+            ) {
+                if (!response.isSuccessful()) {
+                    Log.d("IFTTT", "Not successful response")
+                } else {
+                    Log.d("IFTTT", "Response Successful and data received is " +
+                            "${response.body()!!.status}")
+                }
+            }
+
+            override fun onFailure(call: Call<UpdateResponse>, t: Throwable) {
+                Log.d("IFTTT", "Update Failed")
+            }
+        })
+    }
+
     private interface UserDataTokenApi {
         @POST("/verifydeviceuser")
         fun getUserDataPostAuthentication(@Body loginCred: LoginCred) : Call<UserData>
 
         @POST("/changemydata")
         fun updateUserChoiceNumber(@Body updateData: UpdateData) : Call<UpdateResponse>
+
+        @POST("/mobiledevice/update/deviceid")
+        fun updateDeviceId(@Header("Authorization") token: String, @Body deviceid : DeviceId) : Call<UpdateResponse>
     }
 
     //For Data to be send in Body
@@ -97,5 +124,7 @@ object ApiHelper {
     class UserData(val status: String, val username: String?, val oauthcode: String?)
     // For receiving update data response
     private class UpdateResponse(val status: String)
+    private class DeviceId(val deviceid: String)
+
     class UpdateData(val oauthcode: String, val data: String)
 }
