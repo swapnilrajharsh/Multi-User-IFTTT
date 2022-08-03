@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun navigateToFragment() {
         manager = supportFragmentManager.beginTransaction()
-        if (preferenceHelper.getEmail().isNullOrEmpty() or
+        /*if (preferenceHelper.getEmail().isNullOrEmpty() or
                 preferenceHelper.getOAUTHCode().isNullOrEmpty()) {
             manager.replace(R.id.fragment_container, LandingFragment())
                 .commit()
@@ -34,7 +34,10 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "Stored Email : ${preferenceHelper.getEmail()} and OAUTH : ${preferenceHelper.getOAUTHCode()}")
             manager.replace(R.id.fragment_container, ConnectionFragment())
                 .commit()
-        }
+        }*/
+        //HardCoded Connection Fragment to be enabled
+        manager.replace(R.id.fragment_container, ConnectionFragment())
+            .commit()
     }
 
     private fun checkOrSetUpSharedPreferences() {

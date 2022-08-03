@@ -15,6 +15,18 @@ class PreferenceHelper(context: Context) {
         sharedPreferences.edit().putString(EMAIL_KEY, email).apply()
     }
 
+    fun setConnectionStatus(status : Boolean) {
+        sharedPreferences.edit().putBoolean(CONNECTION_STATUS, status).apply()
+    }
+
+    fun setNetworkIssue(issue : Boolean) {
+        sharedPreferences.edit().putBoolean(NETWORK_ISSUE, issue).apply()
+    }
+
+    fun getConnectionStatus() : Boolean = sharedPreferences.getBoolean(CONNECTION_STATUS, false)
+
+    fun getNetworkIssue() : Boolean = sharedPreferences.getBoolean(NETWORK_ISSUE, false)
+
     fun clear() {
         sharedPreferences.edit().remove(EMAIL_KEY)
         sharedPreferences.edit().remove(OAUTHCODE)
@@ -24,5 +36,7 @@ class PreferenceHelper(context: Context) {
         private const val PREF_NAME = "userdata"
         private const val EMAIL_KEY = "email"
         private const val OAUTHCODE = "authcode"
+        private const val CONNECTION_STATUS = "connectionstatus"
+        private const val NETWORK_ISSUE = "networkissue"
     }
 }

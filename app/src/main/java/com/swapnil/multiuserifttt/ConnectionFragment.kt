@@ -32,7 +32,8 @@ class ConnectionFragment : Fragment() {
         private val REDIRECT_URI : Uri = Uri.parse("iftttpoc://connectcallback")
         private val CONNECTION_ID: String = "XAWK7jde"
     }
-    private lateinit var TOPIC : String
+    /*private lateinit var TOPIC : String*/
+    private val TOPIC = "testtopic/1"
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -41,19 +42,19 @@ class ConnectionFragment : Fragment() {
 
         numberEditText = view.findViewById(R.id.number)
         updateButton = view.findViewById(R.id.update)
-        updateButton.setOnClickListener { updateDB(numberEditText.text.toString()) }
+        //updateButton.setOnClickListener { updateDB(numberEditText.text.toString()) }
         connectButton = view.findViewById(R.id.connect_button)
         preferences = PreferenceHelper(requireContext())
-        setUpCredentialsProvider()
+        /*setUpCredentialsProvider()
         val configuration =
             ConnectButton.Configuration.newBuilder(preferences.getEmail()!!, REDIRECT_URI)
                 .withConnectionId(CONNECTION_ID)
                 .withCredentialProvider(credentialsProvider)
                 .build()
-        /*QSUwqKTF*/
-        /*fWj4fxYg*/
+        *//*QSUwqKTF*//*
+        *//*fWj4fxYg*//*
         Log.d("ALPHA", "P3")
-        connectButton.setup(configuration)
+        connectButton.setup(configuration)*/
         Log.d("ALPHA", "P4")
 
         return view
@@ -62,14 +63,20 @@ class ConnectionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val authHeader = "OAuth " + preferences.getOAUTHCode()
+        /*val authHeader = "OAuth " + preferences.getOAUTHCode()
         val deviceId = fetechDeviceId()
         TOPIC = "$deviceId/brightness"
         Log.d("IFTTT", "Device ID : $deviceId")
-        ApiHelper.updateUserSpecificDeviceId(authHeader, deviceId)
+        ApiHelper.updateUserSpecificDeviceId(authHeader, deviceId)*/
 
         connectToMQTTBroker()
 
+        initParams()
+
+    }
+
+    private fun initParams() {
+        preferences.setConnectionStatus(true)
     }
 
     @SuppressLint("HardwareIds")
@@ -160,9 +167,15 @@ class ConnectionFragment : Fragment() {
         val options = MqttConnectOptions()
         options.userName = username
         options.password = password.toCharArray()
-        options.isCleanSession = true
+        options.isAutomaticReconnect = true
+        options.isCleanSession = false
         options.keepAliveInterval = 15
         options.connectionTimeout = 30
+
+
+        val arrs = "ungraceful"
+        //lwt config
+        options.setWill("testtopic/2", arrs.toByteArray() , 1, false)
 
         try {
             mqttClient.connect(options, null, defaultCbConnect)
@@ -195,17 +208,34 @@ class ConnectionFragment : Fragment() {
         override fun messageArrived(topic: String?, message: MqttMessage?) {
             val mqttResponse = "Receive message: ${message.toString()} from topic: $topic"
             Log.d("MQTTDEMOCLIENT", mqttResponse)
-            Toast.makeText(context,
-                mqttResponse, Toast.LENGTH_LONG).show()
-            reduceBrightness()
+            /*Toast.makeText(context,
+                mqttResponse, Toast.LENGTH_LONG).show()*/
+            processMessage(message.toString())
+            //reduceBrightness()
         }
 
         override fun connectionLost(cause: Throwable?) {
             Log.d("MQTTDEMOCLIENT", "Connection lost ${cause.toString()}")
+            Toast.makeText(context, "Network Issue detected",
+                Toast.LENGTH_SHORT).show()
+            preferences.setNetworkIssue(true)
         }
 
         override fun deliveryComplete(token: IMqttDeliveryToken?) {
             Log.d("MQTTDEMOCLIENT", "Delivery completed")
+        }
+    }
+
+    private fun processMessage(response: String) {
+        Log.d("MQTTDEMOCLIENT", "Response received : ${response}")
+        if (response.equals("RECONNECT") && preferences.getNetworkIssue()) {
+            Toast.makeText(context, "RECONNECTION SUCCESSFUL",
+                Toast.LENGTH_SHORT).show()
+            preferences.setNetworkIssue(false)
+            preferences.setConnectionStatus(true)
+        } else {
+            Toast.makeText(context, response,
+                Toast.LENGTH_SHORT).show()
         }
     }
 
